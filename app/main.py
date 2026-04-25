@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers.diagrama_ia import router as diagrama_ia_router
+import os
 
 app = FastAPI(
     title="Orquestia IA Services",
@@ -8,9 +9,12 @@ app = FastAPI(
     version="0.1.0"
 )
 
+_raw_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:4200,http://localhost:8080")
+_origins = [o.strip() for o in _raw_origins.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200", "http://localhost:8080"],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

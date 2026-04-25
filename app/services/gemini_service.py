@@ -1,14 +1,16 @@
 from google import genai
 from google.genai import types
 import json
+import os
 import asyncio
 from ..models.schemas import DepartamentoInput, DiagramaGenerado
 
-PROJECT_ID = "project-f11e5e0e-e3c4-4083-bb6"
-LOCATION   = "us-central1"
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "project-f11e5e0e-e3c4-4083-bb6")
+LOCATION   = os.environ.get("VERTEX_LOCATION", "us-central1")
 MODELO     = "gemini-2.5-flash"
 
-# ADC (gcloud auth application-default login) maneja la autenticación automáticamente
+# En Cloud Run: usa el Service Account adjunto automáticamente (ADC)
+# En local: usa `gcloud auth application-default login`
 client = genai.Client(vertexai=True, project=PROJECT_ID, location=LOCATION)
 
 
