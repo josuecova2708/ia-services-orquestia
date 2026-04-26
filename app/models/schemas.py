@@ -51,3 +51,18 @@ class GenerarDiagramaResponse(BaseModel):
     nodos: List[NodoGenerado]
     conexiones: List[ConexionGenerada]
     departamentos_sugeridos: List[str]
+
+
+# ─── Toscanini Chatbot Schemas ────────────────────────────────────────────────
+
+class ToscaniniMensaje(BaseModel):
+    rol: Literal["usuario", "toscanini"]
+    mensaje: str
+
+
+class ToscaniniRequest(BaseModel):
+    historial: List[ToscaniniMensaje]
+
+
+class ToscaniniResponse(BaseModel):
+    respuesta: str

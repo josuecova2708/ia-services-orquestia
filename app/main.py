@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers.diagrama_ia import router as diagrama_ia_router
+from .routers.toscanini import router as toscanini_router
 import os
 
 app = FastAPI(
@@ -21,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(diagrama_ia_router)
+app.include_router(toscanini_router)
 
 
 @app.get("/health")
