@@ -3,15 +3,22 @@ from google.genai import types
 import json
 import os
 import asyncio
+from dotenv import load_dotenv
 from ..models.schemas import DepartamentoInput, DiagramaGenerado
 
-PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "project-f11e5e0e-e3c4-4083-bb6")
-LOCATION   = os.environ.get("VERTEX_LOCATION", "us-central1")
-MODELO     = "gemini-2.5-flash"
+load_dotenv()
 
-# En Cloud Run: usa el Service Account adjunto automáticamente (ADC)
-# En local: usa `gcloud auth application-default login`
-client = genai.Client(vertexai=True, project=PROJECT_ID, location=LOCATION)
+MODELO     = "gemini-2.5-flash"
+_API_KEY   = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+
+if _API_KEY:
+    # Local: usa la API key de Google AI Studio (.env)
+    client = genai.Client(api_key=_API_KEY)
+else:
+    # Cloud Run: usa el Service Account adjunto automáticamente (ADC)
+    PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "project-f11e5e0e-e3c4-4083-bb6")
+    LOCATION   = os.environ.get("VERTEX_LOCATION", "us-central1")
+    client = genai.Client(vertexai=True, project=PROJECT_ID, location=LOCATION)
 
 
 def _build_system_prompt(departamentos: list[DepartamentoInput]) -> str:
@@ -118,7 +125,7 @@ def _llamar_gemini(system_prompt: str, descripcion: str) -> DiagramaGenerado:
             system_instruction=system_prompt,
             response_mime_type="application/json",
             temperature=0.2,
-            max_output_tokens=4096,
+            max_output_tokens=16384,
         )
     )
     data = json.loads(response.text)

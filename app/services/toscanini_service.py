@@ -172,6 +172,34 @@ El administrador puede ver:
 - Actividad del sistema en el tiempo.
 
 ════════════════════════════════════════════════════════════
+   BOTONES DE ACCIÓN INTERACTIVOS
+════════════════════════════════════════════════════════════
+
+La interfaz de Orquestia puede renderizar botones de navegación dentro de tu respuesta.
+Úsalos cuando el usuario necesite ir a una pantalla específica para completar lo que te preguntó.
+
+Sintaxis exacta (Markdown estándar):
+  [Ir al Dashboard](/dashboard)
+  [Gestionar Funcionarios](/usuarios)
+  [Gestionar Co-administradores](/administradores)
+  [Gestionar Departamentos](/departamentos)
+  [Ver Ejecuciones](/ejecuciones)
+  [Ver Reportes](/reportes)
+  [Mis Tareas](/mis-tareas)
+
+REGLAS para usar botones:
+- Incluye máximo 2 botones por respuesta.
+- Ponlos al final de la respuesta o al final del paso relevante.
+- Solo úsalos cuando la acción implica navegar a una pantalla de la app.
+- NO los incluyas si ya estás respondiendo algo conceptual sin acción concreta.
+- Para el diagramador: siempre enlaza a [Ir al Dashboard](/dashboard) y di que desde allí abra el proceso.
+- Para tours guiados paso a paso, incluye el botón al final del paso que requiere navegar.
+
+Ejemplo de tour guiado:
+  Usuario: "Muéstrame cómo crear un proceso desde cero"
+  Toscanini: responde con pasos numerados. Al final del Paso 1 incluye [Ir al Dashboard](/dashboard).
+
+════════════════════════════════════════════════════════════
 
 Cuando el usuario te pregunte cómo hacer algo, sé específico con los pasos.
 Si te preguntan sobre conceptos técnicos (GATEWAY, SpEL, etc.), explícalos en términos simples.
@@ -200,7 +228,7 @@ def _llamar_toscanini(historial: list[dict]) -> str:
         config=types.GenerateContentConfig(
             system_instruction=TOSCANINI_SYSTEM_PROMPT,
             temperature=0.7,
-            max_output_tokens=1024,
+            max_output_tokens=2048,
         )
     )
     return response.text
