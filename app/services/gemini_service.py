@@ -46,6 +46,20 @@ Reglas:
 • GATEWAY_AND — División/unión paralela: TODOS los caminos ocurren simultáneamente. Úsalo para trabajo en paralelo. Sin departamento.
 • FIN — Punto de cierre. Puede haber varios (uno por cada resultado final distinto). Sin departamento.
 
+═══ ACTIVIDADES DE AUTOSERVICIO (las realiza el CLIENTE) ═══
+Una ACTIVIDAD puede marcarse con "responsableCliente": true cuando la tarea la realiza el CLIENTE del trámite (no un funcionario).
+Úsalo SOLO para pasos que dependen del cliente y que típicamente surgen a mitad del proceso, por ejemplo:
+  - Aceptar/confirmar condiciones que se calcularon durante el proceso (monto, tasa, plazo).
+  - Firmar un contrato o documento.
+  - Agendar o confirmar una fecha/cita.
+  - Pagar un arancel o comisión calculada en el proceso.
+  - Aportar un dato o documento adicional que solo se pide según el avance.
+Reglas para "responsableCliente": true:
+  - "departamentoId" SIEMPRE null (las tareas del cliente no tienen departamento).
+  - Puede tener formulario (ej: booleano "acepto", texto "firma", archivo "contrato_firmado").
+  - NO la uses para aprobaciones/decisiones internas (riesgo, gerencia): esas las hace un funcionario.
+  - Las actividades de funcionario llevan "responsableCliente": false.
+
 ═══ TIPOS DE CONEXIONES ═══
 • NORMAL — Flujo secuencial directo. esDefault: false. Sin label ni condicion.
 • CONDICIONAL — Se activa si se cumple una condición. Siempre incluye "label" descriptivo (ej: "Aprobado", "Rechazado", "Sí", "No"). Si el nodo origen tiene formulario, incluye "condicion" en SpEL: "#campo == true", "#campo == 'Valor'", "#monto > 1000".
@@ -101,17 +115,20 @@ requerido: true si el gateway necesita ese campo para decidir.
 Responde ÚNICAMENTE con JSON válido, sin texto antes ni después, siguiendo exactamente este esquema:
 {{
   "nodos": [
-    {{"id": "n1", "tipo": "INICIO", "label": "Inicio", "posX": 400, "posY": 50, "departamentoId": null, "formulario": []}},
-    {{"id": "n2", "tipo": "ACTIVIDAD", "label": "Nombre tarea", "posX": 400, "posY": 270, "departamentoId": "id-real-o-null", "formulario": [{{"nombre": "aprobado", "tipo": "BOOLEANO", "label": "¿Aprobar?", "requerido": true, "opciones": []}}]}},
-    {{"id": "n3", "tipo": "GATEWAY_XOR", "label": "¿Aprobado?", "posX": 400, "posY": 490, "departamentoId": null, "formulario": []}},
-    {{"id": "n4", "tipo": "FIN", "label": "Fin", "posX": 400, "posY": 710, "departamentoId": null, "formulario": []}}
+    {{"id": "n1", "tipo": "INICIO", "label": "Inicio", "posX": 400, "posY": 50, "departamentoId": null, "responsableCliente": false, "formulario": []}},
+    {{"id": "n2", "tipo": "ACTIVIDAD", "label": "Revisar solicitud", "posX": 400, "posY": 270, "departamentoId": "id-real-o-null", "responsableCliente": false, "formulario": [{{"nombre": "aprobado", "tipo": "BOOLEANO", "label": "¿Aprobar?", "requerido": true, "opciones": []}}]}},
+    {{"id": "n3", "tipo": "GATEWAY_XOR", "label": "¿Aprobado?", "posX": 400, "posY": 490, "departamentoId": null, "responsableCliente": false, "formulario": []}},
+    {{"id": "n4", "tipo": "ACTIVIDAD", "label": "Aceptar condiciones", "posX": 400, "posY": 710, "departamentoId": null, "responsableCliente": true, "formulario": [{{"nombre": "acepto", "tipo": "BOOLEANO", "label": "¿Aceptas las condiciones?", "requerido": true, "opciones": []}}]}},
+    {{"id": "n5", "tipo": "FIN", "label": "Aprobado", "posX": 400, "posY": 930, "departamentoId": null, "responsableCliente": false, "formulario": []}},
+    {{"id": "n6", "tipo": "FIN", "label": "Rechazado", "posX": 650, "posY": 710, "departamentoId": null, "responsableCliente": false, "formulario": []}}
   ],
   "conexiones": [
     {{"id": "c1", "origenId": "n1", "destinoId": "n2", "tipo": "NORMAL", "label": null, "condicion": null, "esDefault": false, "maxReintentos": null}},
     {{"id": "c2", "origenId": "n2", "destinoId": "n3", "tipo": "NORMAL", "label": null, "condicion": null, "esDefault": false, "maxReintentos": null}},
     {{"id": "c3", "origenId": "n3", "destinoId": "n4", "tipo": "CONDICIONAL", "label": "Aprobado", "condicion": "#aprobado == true", "esDefault": false, "maxReintentos": null}},
-    {{"id": "c4", "origenId": "n3", "destinoId": "n1", "tipo": "RETORNO", "label": "Rechazado — reintentar", "condicion": "#aprobado == false", "esDefault": false, "maxReintentos": 2}},
-    {{"id": "c5", "origenId": "n3", "destinoId": "n4", "tipo": "NORMAL", "label": "Rechazado definitivo", "condicion": null, "esDefault": true, "maxReintentos": null}}
+    {{"id": "c4", "origenId": "n4", "destinoId": "n5", "tipo": "NORMAL", "label": null, "condicion": null, "esDefault": false, "maxReintentos": null}},
+    {{"id": "c5", "origenId": "n3", "destinoId": "n2", "tipo": "RETORNO", "label": "Rechazado — reintentar", "condicion": "#aprobado == false", "esDefault": false, "maxReintentos": 2}},
+    {{"id": "c6", "origenId": "n3", "destinoId": "n6", "tipo": "NORMAL", "label": "Rechazado definitivo", "condicion": null, "esDefault": true, "maxReintentos": null}}
   ],
   "departamentos_sugeridos": ["NombreDepto1", "NombreDepto2"]
 }}"""

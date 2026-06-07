@@ -43,6 +43,7 @@ NORMAL sin condición:
 
 ═══ CAMBIOS QUE NO DEBES HACER ═══
 - NO cambies el departamentoId de ningún nodo — es una asignación real del cliente.
+- NO cambies el campo "responsableCliente" de ningún nodo — define si la tarea la hace el cliente (autoservicio) o un funcionario. Consérvalo tal cual.
 - NO cambies el campo "nombre" (snake_case) de ningún CampoFormulario — es la variable SpEL.
 - NO cambies las expresiones SpEL ("condicion") que ya existen y son correctas.
 - NO cambies el tipo de ningún nodo.

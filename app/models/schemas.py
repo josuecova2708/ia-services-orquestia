@@ -27,6 +27,7 @@ class NodoGenerado(BaseModel):
     posX: int
     posY: int
     departamentoId: Optional[str] = None
+    responsableCliente: bool = False
     formulario: List[CampoFormulario] = []
 
 
@@ -77,6 +78,7 @@ class NodoOptimizar(BaseModel):
     posX: int
     posY: int
     departamentoId: Optional[str] = None
+    responsableCliente: bool = False
     formulario: List[CampoFormulario] = []
 
 
@@ -107,3 +109,33 @@ class OptimizarDiagramaResponse(BaseModel):
 
 class TranscripcionResponse(BaseModel):
     texto: str
+
+
+# ─── Agente de Recepción (Clasificador de trámites) ───────────────────────────
+
+class ProcesoDisponible(BaseModel):
+    id: str
+    nombre: str
+    descripcion: str = ""
+
+
+class ChatMensaje(BaseModel):
+    rol: Literal["usuario", "agente"]
+    mensaje: str
+
+
+class OpcionProceso(BaseModel):
+    id: str
+    nombre: str
+
+
+class ClasificarTramiteRequest(BaseModel):
+    historial: List[ChatMensaje]
+    procesos: List[ProcesoDisponible] = []
+
+
+class ClasificarTramiteResponse(BaseModel):
+    respuesta: str
+    proceso_recomendado_id: Optional[str] = None
+    requiere_aclaracion: bool = False
+    opciones: List[OpcionProceso] = []

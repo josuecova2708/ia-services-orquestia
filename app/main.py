@@ -4,6 +4,7 @@ from .routers.diagrama_ia import router as diagrama_ia_router
 from .routers.toscanini import router as toscanini_router
 from .routers.optimizar_ia import router as optimizar_ia_router
 from .routers.voz_ia import router as voz_ia_router
+from .routers.clasificador_ia import router as clasificador_ia_router
 import os
 
 app = FastAPI(
@@ -27,6 +28,7 @@ app.include_router(diagrama_ia_router)
 app.include_router(toscanini_router)
 app.include_router(optimizar_ia_router)
 app.include_router(voz_ia_router)
+app.include_router(clasificador_ia_router)
 
 
 @app.get("/health")
