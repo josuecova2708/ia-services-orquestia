@@ -139,3 +139,62 @@ class ClasificarTramiteResponse(BaseModel):
     proceso_recomendado_id: Optional[str] = None
     requiere_aclaracion: bool = False
     opciones: List[OpcionProceso] = []
+
+
+# ─── Comandos sobre el diagrama (lenguaje natural → acción) ────────────────────
+
+class NodoComando(BaseModel):
+    id: str
+    label: str
+    tipo: str
+    departamentoId: Optional[str] = None
+    responsableCliente: bool = False
+
+
+class ComandoDiagramaRequest(BaseModel):
+    comando: str
+    nodos: List[NodoComando] = []
+    departamentos: List[DepartamentoInput] = []
+
+
+class AccionDiagrama(BaseModel):
+    # asignar_departamento | renombrar | autoservicio | eliminar
+    tipo: str
+    nodoId: str
+    departamentoId: Optional[str] = None
+    nuevoLabel: Optional[str] = None
+    valor: Optional[bool] = None
+
+
+class ComandoDiagramaResponse(BaseModel):
+    acciones: List[AccionDiagrama] = []
+    mensaje: str = ""
+
+
+# ─── Consulta de Reportes (lenguaje natural → especificación estructurada) ─────
+
+class FuncionarioDisponible(BaseModel):
+    id: str
+    nombre: str
+
+
+class ConsultaIaRequest(BaseModel):
+    pregunta: str
+    fecha_actual: str  # yyyy-MM-dd, para interpretar "junio", "esta semana", etc.
+    procesos: List[ProcesoDisponible] = []
+    funcionarios: List[FuncionarioDisponible] = []
+
+
+class ConsultaReporteSpec(BaseModel):
+    valido: bool = True
+    mensaje: str = ""
+    metrica: Optional[str] = None
+    desde: Optional[str] = None
+    hasta: Optional[str] = None
+    estado: Optional[str] = None
+    proceso_id: Optional[str] = None
+    funcionario_id: Optional[str] = None
+    limite: Optional[int] = None
+    orden: str = "desc"
+    formato: str = "pantalla"  # pantalla | pdf | excel
+    titulo: Optional[str] = None
