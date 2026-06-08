@@ -7,6 +7,9 @@ from .routers.voz_ia import router as voz_ia_router
 from .routers.clasificador_ia import router as clasificador_ia_router
 from .routers.comando_ia import router as comando_ia_router
 from .routers.consulta_reporte import router as consulta_reporte_router
+from .routers.prediccion_ia import router as prediccion_ia_router
+from .services import prediccion_service
+import logging
 import os
 
 app = FastAPI(
@@ -33,8 +36,26 @@ app.include_router(voz_ia_router)
 app.include_router(clasificador_ia_router)
 app.include_router(comando_ia_router)
 app.include_router(consulta_reporte_router)
+app.include_router(prediccion_ia_router)
+
+
+@app.on_event("startup")
+async def _cargar_modelo_prediccion():
+    """Precarga el modelo de Deep Learning para que la primera predicción sea rápida."""
+    try:
+        prediccion_service.cargar_modelo()
+        logging.getLogger("uvicorn").info("Modelo de predicción BPM cargado.")
+    except Exception as e:
+        logging.getLogger("uvicorn").warning(
+            "Modelo de predicción no disponible al iniciar (%s). "
+            "Entrena con scripts/train_model.py.", e
+        )
 
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "service": "orquestia-ia-services"}
+    return {
+        "status": "ok",
+        "service": "orquestia-ia-services",
+        "modelo_prediccion": prediccion_service.modelo_disponible(),
+    }

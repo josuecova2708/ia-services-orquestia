@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List, Literal
 
 
@@ -198,3 +198,58 @@ class ConsultaReporteSpec(BaseModel):
     orden: str = "desc"
     formato: str = "pantalla"  # pantalla | pdf | excel
     titulo: Optional[str] = None
+
+
+# ─── Predicción de instancias (Deep Learning) ─────────────────────────────────
+
+class PrediccionTareaInput(BaseModel):
+    """Una tarea pendiente con sus features ya calculadas por el backend."""
+    tarea_id: str
+    nodo_label: str = ""
+    funcionario: str = ""               # nombre legible (para mostrar/recomendar)
+    hora_creacion: int                  # 0-23
+    dia_semana: int                     # 0=lunes ... 6=domingo
+    carga_funcionario: int = 0          # tareas pendientes del asignado
+    duracion_historica_avg: float = 60  # minutos promedio histórico de ese nodo
+    intentos: int = 0
+
+    @field_validator("nodo_label", "funcionario", mode="before")
+    @classmethod
+    def _none_a_vacio(cls, v):
+        return v if v is not None else ""
+
+
+class PrediccionRequest(BaseModel):
+    instancia_id: str
+    proceso_nombre: str = ""
+    tareas: List[PrediccionTareaInput] = []
+
+    @field_validator("proceso_nombre", mode="before")
+    @classmethod
+    def _none_a_vacio(cls, v):
+        return v if v is not None else ""
+
+
+class NodoRiesgo(BaseModel):
+    tarea_id: str
+    nodo_label: str
+    funcionario: str = ""
+    riesgo: float                       # 0-1 (salida cruda del modelo)
+    duracion_estimada_min: float        # salida cruda del modelo
+    # Features EXACTAS que recibió el modelo (datos en crudo, para auditar/defender)
+    hora_creacion: int = 0
+    dia_semana: int = 0
+    carga_funcionario: int = 0
+    duracion_historica_avg: float = 0.0
+    intentos: int = 0
+
+
+class PrediccionResponse(BaseModel):
+    instancia_id: str
+    riesgo_global: float = 0.0
+    duracion_estimada_total_min: float = 0.0
+    nodos_en_riesgo: List[NodoRiesgo] = []
+    tareas: List[NodoRiesgo] = []       # todas las tareas evaluadas
+    recomendaciones: List[str] = []
+    resumen: str = ""
+    modelo_info: dict = {}
